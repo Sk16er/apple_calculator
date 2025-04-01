@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apple Style Scientific Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .btn-operator {
+            background-color: #FF9500;
+        }
+        .btn-operator:hover {
+            background-color: #ffaa33;
+        }
+        .btn-operator.active {
+            background-color: white;
+            color: #FF9500;
+        }
+        .btn-function {
+            background-color: #A5A5A5;
+            color: #1C1C1C;
+        }
+        .btn-function:hover {
+            background-color: #D4D4D2;
+        }
+        .btn-number {
+            background-color: #333333;
+        }
+        .btn-number:hover {
+            background-color: #4a4949;
+        }
+        .btn-scientific {
+            background-color: #2c2c2e;
+        }
+        .btn-scientific:hover {
+            background-color: #3a3a3c;
+        }
+        .calculator {
+            width: 300px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border-radius: 40px;
+            overflow: hidden;
+        }
+        .display {
+            height: 180px;
+            font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+        .button-animation {
+            transition: transform 0.05s;
+        }
+        .button-animation:active {
+            transform: scale(0.93);
+        }
+        .scientific-panel {
+            transition: all 0.3s ease;
+            max-height: 0;
+            overflow: hidden;
+        }
+        .scientific-panel.active {
+            max-height: 500px;
+        }
+        .conversion-panel {
+            transition: all 0.3s ease;
+            max-height: 0;
+            overflow: hidden;
+        }
+        .conversion-panel.active {
+            max-height: 500px;
+        }
+        select {
+            background-color: #2c2c2e;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 8px 15px;
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 10px center;
+            background-size: 15px;
+        }
+    </style>
+</head>
+<body class="bg-black min-h-screen flex items-center justify-center p-4">
+    <div class="calculator bg-black">
+        <!-- Toggle Buttons -->
+        <div class="flex justify-between px-5 pt-3">
+            <button onclick="toggleCalculatorMode('basic')" id="basic-mode" class="text-gray-400 font-medium">Basic</button>
+            <button onclick="toggleCalculatorMode('scientific')" id="scientific-mode" class="text-gray-400 font-medium">Scientific</button>
+            <button onclick="toggleCalculatorMode('conversion')" id="conversion-mode" class="text-gray-400 font-medium">Conversion</button>
+        </div>
+
+        <!-- Display Area -->
+        <div class="display p-5 flex flex-col justify-end items-end text-white">
+            <div id="previous-operand" class="text-gray-400 text-xl h-7 mb-1 opacity-70 truncate w-full text-right"></div>
+            <div id="current-operand" class="text-white text-6xl font-light tracking-tight truncate w-full text-right">0</div>
+        </div>
+
+        <!-- Scientific Panel -->
+        <div id="scientific-panel" class="scientific-panel grid grid-cols-5 gap-3 px-5 pb-3">
+            <button onclick="scientificFunction('sin')" class="btn-scientific button-animation rounded-lg text-white text-sm font-medium py-3">sin</button>
+            <button onclick="scientificFunction('cos')" class="btn-scientific button-animation rounded-lg text-white text-sm font-medium py-3">cos</button>
+            <button onclick="scientificFunction('tan')" class="btn-scientific button-animation rounded-lg text-white text-sm font-medium py-3">tan</button>
+            <button onclick="scientificFunction('log')" class="btn-scientific button-animation rounded-lg text-white text-sm font-medium py-3">log</button>
+            <button onclick="scientificFunction('ln')" class="btn-scientific button-animation rounded-lg text-white text-sm font-medium py-3">ln</button>
+            
+            <button onclick="scientificFunction('asin')" class="btn-scientific button-animation rounded-lg text-white text-sm font-medium py-3">sin<sup>-1</sup></button>
+            <button onclick="scientificFunction('acos')" class="btn-scientific button-animation rounded-lg text-white text-sm font-medium py-3">cos<sup>-1</sup></button>
+            <button onclick="scientificFunction('atan')" class="btn-scientific button-animation rounded-lg text-white text-sm font-medium py-3">tan<sup>-1</sup></button>
+            <button onclick="scientificFunction('log10')" class="btn-scientific button-animation rounded-lg text-white text-sm font-medium py-3">log10</button>
+            <button onclick="scientificFunction('exp')" class="btn-scientific button-animation rounded-lg text-white text-sm font-medium py-3">e<sup>x</sup></button>
+            
+            <button onclick="scientificFunction('pi')" class="btn-scientific button-animation rounded-lg text-white text-sm font-medium py-3">π</button>
+            <button onclick="scientificFunction('e')" class="btn-scientific button-animation rounded-lg text-white text-sm font-medium py-3">e</button>
+            <button onclick="scientificFunction('sqrt')" class="btn-scientific button-animation rounded-lg text-white text-sm font-medium py-3">√</button>
+            <button onclick="scientificFunction('pow')" class="btn-scientific button-animation rounded-lg text-white text-sm font-medium py-3">x<sup>y</sup></button>
+            <button onclick="scientificFunction('factorial')" class="btn-scientific button-animation rounded-lg text-white text-sm font-medium py-3">x!</button>
+        </div>
+
+        <!-- Conversion Panel -->
+        <div id="conversion-panel" class="conversion-panel px-5 pb-3">
+            <div class="grid grid-cols-2 gap-3 mb-3">
+                <select id="conversion-type" class="col-span-2" onchange="updateConversionUnits()">
+                    <option value="length">Length</option>
+                    <option value="weight">Weight</option>
+                    <option value="temperature">Temperature</option>
+                    <option value="area">Area</option>
+                    <option value="volume">Volume</option>
+                </select>
+            </div>
+            <div class="grid grid-cols-5 gap-3">
+                <select id="from-unit" class="col-span-2"></select>
+                <div class="col-span-1 flex items-center justify-center text-white">→</div>
+                <select id="to-unit" class="col-span-2"></select>
+                <button onclick="convertUnits()" class="btn-scientific button-animation rounded-lg text-white text-sm font-medium py-3 col-span-3">Convert</button>
+                <button onclick="swapUnits()" class="btn-scientific button-animation rounded-lg text-white text-sm font-medium py-3 col-span-2">Swap</button>
+            </div>
+            <div id="conversion-result" class="text-white text-xl text-center mt-3"></div>
+        </div>
+
+        <!-- Button Grid -->
+        <div class="grid grid-cols-4 gap-4 p-5">
+            <!-- Row 1 -->
+            <button onclick="clearAll()" class="btn-function button-animation rounded-full text-xl font-medium aspect-square flex items-center justify-center">AC</button>
+            <button onclick="toggleSign()" class="btn-function button-animation rounded-full text-xl font-medium aspect-square flex items-center justify-center">+/-</button>
+            <button onclick="percentage()" class="btn-function button-animation rounded-full text-xl font-medium aspect-square flex items-center justify-center">%</button>
+            <button onclick="chooseOperation('/')" class="btn-operator button-animation rounded-full text-white text-2xl font-medium aspect-square flex items-center justify-center">÷</button>
+
+            <!-- Row 2 -->
+            <button onclick="appendNumber('7')" class="btn-number button-animation rounded-full text-white text-2xl font-medium aspect-square flex items-center justify-center">7</button>
+            <button onclick="appendNumber('8')" class="btn-number button-animation rounded-full text-white text-2xl font-medium aspect-square flex items-center justify-center">8</button>
+            <button onclick="appendNumber('9')" class="btn-number button-animation rounded-full text-white text-2xl font-medium aspect-square flex items-center justify-center">9</button>
+            <button onclick="chooseOperation('*')" class="btn-operator button-animation rounded-full text-white text-2xl font-medium aspect-square flex items-center justify-center">×</button>
+
+            <!-- Row 3 -->
+            <button onclick="appendNumber('4')" class="btn-number button-animation rounded-full text-white text-2xl font-medium aspect-square flex items-center justify-center">4</button>
+            <button onclick="appendNumber('5')" class="btn-number button-animation rounded-full text-white text-2xl font-medium aspect-square flex items-center justify-center">5</button>
+            <button onclick="appendNumber('6')" class="btn-number button-animation rounded-full text-white text-2xl font-medium aspect-square flex items-center justify-center">6</button>
+            <button onclick="chooseOperation('-')" class="btn-operator button-animation rounded-full text-white text-2xl font-medium aspect-square flex items-center justify-center">−</button>
+
+            <!-- Row 4 -->
+            <button onclick="appendNumber('1')" class="btn-number button-animation rounded-full text-white text-2xl font-medium aspect-square flex items-center justify-center">1</button>
+            <button onclick="appendNumber('2')" class="btn-number button-animation rounded-full text-white text-2xl font-medium aspect-square flex items-center justify-center">2</button>
+            <button onclick="appendNumber('3')" class="btn-number button-animation rounded-full text-white text-2xl font-medium aspect-square flex items-center justify-center">3</button>
+            <button onclick="chooseOperation('+')" class="btn-operator button-animation rounded-full text-white text-2xl font-medium aspect-square flex items-center justify-center">+</button>
+
+            <!-- Row 5 -->
+            <button onclick="appendNumber('0')" class="btn-number button-animation rounded-full text-white text-2xl font-medium col-span-2 h-full flex items-center justify-start pl-7" style="border-radius: 36px;">0</button>
+            <button onclick="appendNumber('.')" class="btn-number button-animation rounded-full text-white text-2xl font-medium aspect-square flex items-center justify-center">.</button>
+            <button onclick="compute()" class="btn-operator button-animation rounded-full text-white text-2xl font-medium aspect-square flex items-center justify-center">=</button>
+        </div>
+    </div>
+
+    <script>
+        let currentOperand = '0';
+        let previousOperand = '';
+        let operation = undefined;
+        let resetScreen = false;
+        let currentMode = 'basic';
+        let isDegreeMode = true;
+
+        const currentOperandElement = document.getElementById('current-operand');
+        const previousOperandElement = document.getElementById('previous-operand');
+        const scientificPanel = document.getElementById('scientific-panel');
+        const conversionPanel = document.getElementById('conversion-panel');
+        const conversionResult = document.getElementById('conversion-result');
+
+        // Unit conversion data
+        const conversionUnits = {
+            length: [
+                { name: "Meters", value: 1 },
+                { name: "Kilometers", value: 1000 },
+                { name: "Centimeters", value: 0.01 },
+                { name: "Millimeters", value: 0.001 },
+                { name: "Miles", value: 1609.344 },
+                { name: "Yards", value: 0.9144 },
+                { name: "Feet", value: 0.3048 },
+                { name: "Inches", value: 0.0254 }
+            ],
+            weight: [
+                { name: "Kilograms", value: 1 },
+                { name: "Grams", value: 0.001 },
+                { name: "Milligrams", value: 0.000001 },
+                { name: "Metric Tonnes", value: 1000 },
+                { name: "Pounds", value: 0.453592 },
+                { name: "Ounces", value: 0.0283495 },
+                { name: "Stones", value: 6.35029 }
+            ],
+            temperature: [
+                { name: "Celsius", value: "celsius" },
+                { name: "Fahrenheit", value: "fahrenheit" },
+                { name: "Kelvin", value: "kelvin" }
+            ],
+            area: [
+                { name: "Square Meters", value: 1 },
+                { name: "Square Kilometers", value: 1000000 },
+                { name: "Square Centimeters", value: 0.0001 },
+                { name: "Hectares", value: 10000 },
+                { name: "Square Miles", value: 2589988.11 },
+                { name: "Square Yards", value: 0.836127 },
+                { name: "Square Feet", value: 0.092903 },
+                { name: "Square Inches", value: 0.00064516 },
+                { name: "Acres", value: 4046.86 }
+            ],
+            volume: [
+                { name: "Liters", value: 1 },
+                { name: "Milliliters", value: 0.001 },
+                { name: "Cubic Meters", value: 1000 },
+                { name: "Gallons (US)", value: 3.78541 },
+                { name: "Gallons (UK)", value: 4.54609 },
+                { name: "Quarts (US)", value: 0.946353 },
+                { name: "Quarts (UK)", value: 1.13652 },
+                { name: "Pints (US)", value: 0.473176 },
+                { name: "Pints (UK)", value: 0.568261 },
+                { name: "Fluid Ounces (US)", value: 0.0295735 },
+                { name: "Fluid Ounces (UK)", value: 0.0284131 }
+            ]
+        };
+
+        // Initialize unit dropdowns
+        function updateConversionUnits() {
+            const type = document.getElementById('conversion-type').value;
+            const fromSelect = document.getElementById('from-unit');
+            const toSelect = document.getElementById('to-unit');
+            
+            // Clear existing options
+            fromSelect.innerHTML = '';
+            toSelect.innerHTML = '';
+            
+            // Add new options
+            conversionUnits[type].forEach(unit => {
+                const option1 = document.createElement('option');
+                option1.value = unit.value;
+                option1.textContent = unit.name;
+                fromSelect.appendChild(option1);
+                
+                const option2 = document.createElement('option');
+                option2.value = unit.value;
+                option2.textContent = unit.name;
+                toSelect.appendChild(option2);
+            });
+            
+            // Set different defaults for to-select
+            if (type === 'temperature') {
+                toSelect.selectedIndex = 1;
+            } else if (conversionUnits[type].length > 1) {
+                toSelect.selectedIndex = 1;
+            }
+        }
+
+        // Toggle between calculator modes
+        function toggleCalculatorMode(mode) {
+            currentMode = mode;
+            
+            // Update active button styles
+            document.getElementById('basic-mode').classList.toggle('text-white', mode === 'basic');
+            document.getElementById('basic-mode').classList.toggle('text-gray-400', mode !== 'basic');
+            document.getElementById('scientific-mode').classList.toggle('text-white', mode === 'scientific');
+            document.getElementById('scientific-mode').classList.toggle('text-gray-400', mode !== 'scientific');
+            document.getElementById('conversion-mode').classList.toggle('text-white', mode === 'conversion');
+            document.getElementById('conversion-mode').classList.toggle('text-gray-400', mode !== 'conversion');
+            
+            // Toggle panels
+            if (mode === 'scientific') {
+                scientificPanel.classList.add('active');
+                conversionPanel.classList.remove('active');
+            } else if (mode === 'conversion') {
+                scientificPanel.classList.remove('active');
+                conversionPanel.classList.add('active');
+            } else {
+                scientificPanel.classList.remove('active');
+                conversionPanel.classList.remove('active');
+            }
+        }
+
+        function clearAll() {
+            currentOperand = '0';
+            previousOperand = '';
+            operation = undefined;
+            updateDisplay();
+            
+            // Remove active state from all operator buttons
+            document.querySelectorAll('.btn-operator').forEach(button => {
+                button.classList.remove('active');
+            });
+        }
+
+        function toggleSign() {
+            currentOperand = currentOperand.startsWith('-') 
+                ? currentOperand.substring(1) 
+                : '-' + currentOperand;
+            updateDisplay();
+        }
+
+        function percentage() {
+            currentOperand = String(parseFloat(currentOperand) / 100);
+            updateDisplay();
+        }
+
+        function appendNumber(number) {
+            if (currentOperand === '0' || resetScreen) {
+                currentOperand = '';
+                resetScreen = false;
+            }
+            
+            if (number === '.' && currentOperand.includes('.')) return;
+            
+            currentOperand += number;
+            updateDisplay();
+        }
+
+        function chooseOperation(op) {
+            if (currentOperand === '') return;
+            if (previousOperand !== '') {
+                compute();
+            }
+            
+            // Remove active state from all operator buttons
+            document.querySelectorAll('.btn-operator').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            // Add active state to clicked operator button
+            event.target.classList.add('active');
+            
+            operation = op;
+            previousOperand = currentOperand + " " + getOperatorSymbol(op);
+            currentOperand = '';
+            updateDisplay();
+        }
+
+        function compute() {
+            let computation;
+            const prev = parseFloat(previousOperand);
+            const current = parseFloat(currentOperand);
+            
+            if (isNaN(prev) || isNaN(current)) return;
+            
+            switch (operation) {
+                case '+':
+                    computation = prev + current;
+                    break;
+                case '-':
+                    computation = prev - current;
+                    break;
+                case '*':
+                    computation = prev * current;
+                    break;
+                case '/':
+                    computation = prev / current;
+                    break;
+                default:
+                    return;
+            }
+            
+            // Remove active state from all operator buttons
+            document.querySelectorAll('.btn-operator').forEach(button => {
+                button.classList.remove('active');
+            });
+            
+            currentOperand = String(Math.round(computation * 1000000000000) / 1000000000000); // Fix floating point precision
+            operation = undefined;
+            previousOperand = '';
+            resetScreen = true;
+            updateDisplay();
+        }
+
+        function getOperatorSymbol(op) {
+            switch(op) {
+                case '+': return '+';
+                case '-': return '−';
+                case '*': return '×';
+                case '/': return '÷';
+                default: return op;
+            }
+        }
+
+        // Scientific functions
+        function scientificFunction(func) {
+            const value = parseFloat(currentOperand);
+            let result;
+            
+            switch(func) {
+                case 'sin':
+                    result = isDegreeMode ? Math.sin(value * Math.PI / 180) : Math.sin(value);
+                    break;
+                case 'cos':
+                    result = isDegreeMode ? Math.cos(value * Math.PI / 180) : Math.cos(value);
+                    break;
+                case 'tan':
+                    result = isDegreeMode ? Math.tan(value * Math.PI / 180) : Math.tan(value);
+                    break;
+                case 'asin':
+                    result = isDegreeMode ? Math.asin(value) * 180 / Math.PI : Math.asin(value);
+                    break;
+                case 'acos':
+                    result = isDegreeMode ? Math.acos(value) * 180 / Math.PI : Math.acos(value);
+                    break;
+                case 'atan':
+                    result = isDegreeMode ? Math.atan(value) * 180 / Math.PI : Math.atan(value);
+                    break;
+                case 'log':
+                    result = Math.log10(value);
+                    break;
+                case 'ln':
+                    result = Math.log(value);
+                    break;
+                case 'log10':
+                    result = Math.log10(value);
+                    break;
+                case 'exp':
+                    result = Math.exp(value);
+                    break;
+                case 'sqrt':
+                    result = Math.sqrt(value);
+                    break;
+                case 'pow':
+                    previousOperand = currentOperand + " ^";
+                    currentOperand = '';
+                    operation = 'pow';
+                    updateDisplay();
+                    return;
+                case 'pi':
+                    result = Math.PI;
+                    break;
+                case 'e':
+                    result = Math.E;
+                    break;
+                case 'factorial':
+                    result = factorial(value);
+                    break;
+            }
+            
+            currentOperand = String(Math.round(result * 1000000000000) / 1000000000000);
+            updateDisplay();
+        }
+
+        function factorial(n) {
+            if (n < 0) return NaN;
+            if (n === 0 || n === 1) return 1;
+            let result = 1;
+            for (let i = 2; i <= n; i++) {
+                result *= i;
+            }
+            return result;
+        }
+
+        // Unit conversion functions
+        function convertUnits() {
+            const type = document.getElementById('conversion-type').value;
+            const fromValue = parseFloat(currentOperand);
+            const fromUnit = document.getElementById('from-unit').value;
+            const toUnit = document.getElementById('to-unit').value;
+            
+            if (isNaN(fromValue)) {
+                conversionResult.textContent = "Invalid input";
+                return;
+            }
+            
+            let result;
+            
+            if (type === 'temperature') {
+                result = convertTemperature(fromValue, fromUnit, toUnit);
+            } else {
+                // For all other types that use linear conversion
+                const inBase = fromValue * parseFloat(fromUnit);
+                result = inBase / parseFloat(toUnit);
+            }
+            
+            conversionResult.textContent = `${fromValue} ${document.getElementById('from-unit').selectedOptions[0].text} = ${result.toFixed(6)} ${document.getElementById('to-unit').selectedOptions[0].text}`;
+        }
+
+        function convertTemperature(value, fromUnit, toUnit) {
+            // First convert to Celsius if necessary
+            let celsius;
+            if (fromUnit === "celsius") {
+                celsius = value;
+            } else if (fromUnit === "fahrenheit") {
+                celsius = (value - 32) * 5/9;
+            } else if (fromUnit === "kelvin") {
+                celsius = value - 273.15;
+            }
+            
+            // Now convert from Celsius to target unit
+            if (toUnit === "celsius") {
+                return celsius;
+            } else if (toUnit === "fahrenheit") {
+                return celsius * 9/5 + 32;
+            } else if (toUnit === "kelvin") {
+                return celsius + 273.15;
+            }
+        }
+
+        function swapUnits() {
+            const fromSelect = document.getElementById('from-unit');
+            const toSelect = document.getElementById('to-unit');
+            const tempIndex = fromSelect.selectedIndex;
+            fromSelect.selectedIndex = toSelect.selectedIndex;
+            toSelect.selectedIndex = tempIndex;
+        }
+
+        function updateDisplay() {
+            currentOperandElement.textContent = currentOperand;
+            previousOperandElement.textContent = previousOperand;
+            
+            // Auto-scale font size if number is too long
+            if (currentOperand.length > 8) {
+                currentOperandElement.style.fontSize = '3.5rem';
+            } else if (currentOperand.length > 6) {
+                currentOperandElement.style.fontSize = '4rem';
+            } else {
+                currentOperandElement.style.fontSize = '4.5rem';
+            }
+        }
+
+        // Initialize
+        updateDisplay();
+        updateConversionUnits();
+        toggleCalculatorMode('basic');
+
+        // Keyboard support
+        document.addEventListener('keydown', function(event) {
+            if (event.key >= '0' && event.key <= '9') appendNumber(event.key);
+            else if (event.key === '.') appendNumber('.');
+            else if (event.key === '+') chooseOperation('+');
+            else if (event.key === '-') chooseOperation('-');
+            else if (event.key === '*') chooseOperation('*');
+            else if (event.key === '/') chooseOperation('/');
+            else if (event.key === '%') percentage();
+            else if (event.key === 'Enter' || event.key === '=') compute();
+            else if (event.key === 'Escape') clearAll();
+            else if (event.key === 'Backspace') {
+                currentOperand = currentOperand.slice(0, -1);
+                if (currentOperand === '') currentOperand = '0';
+                updateDisplay();
+            }
+        });
+    </script>
+</body>
+</html>
