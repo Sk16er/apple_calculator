@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Apple Calculator</title>
+    <title>Calculator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -12,27 +12,22 @@
             font-variant-numeric: tabular-nums;
         }
         .mode-toggle {
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .calculator-function {
-            transition: background-color 0.2s;
+        .calculator-button {
+            transition: all 0.1s ease;
+            border-radius: 9999px;
+            will-change: transform, background-color;
         }
-        .calculator-function:active {
+        .calculator-button:active {
             transform: scale(0.95);
         }
         .tab-button {
             transition: all 0.3s ease;
         }
         .tab-button.active {
-            border-bottom-width: 2px;
+            border-bottom-width: 3px;
             border-color: #007AFF;
-        }
-        .flip-enter-active, .flip-leave-active {
-            transition: all 0.4s;
-        }
-        .flip-enter-from, .flip-leave-to {
-            opacity: 0;
-            transform: rotateX(90deg);
         }
         .tab-content {
             transition: opacity 0.3s ease;
@@ -47,120 +42,173 @@
         .heart-animation {
             animation: heartBeat 0.8s;
         }
+        @keyframes rotateTheme {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .theme-icon {
+            transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .theme-icon.animate {
+            animation: rotateTheme 0.5s;
+        }
+        /* Apple calculator button colors */
+        .btn-gray {
+            background-color: #A5A5A5;
+            color: #000000;
+        }
+        .btn-gray:active {
+            background-color: #D4D4D4;
+        }
+        .btn-dark-gray {
+            background-color: #333333;
+            color: #FFFFFF;
+        }
+        .btn-dark-gray:active {
+            background-color: #4A4A4A;
+        }
+        .btn-orange {
+            background-color: #FF9F0A;
+            color: #FFFFFF;
+        }
+        .btn-orange:active {
+            background-color: #FFB340;
+        }
+        body.dark .btn-gray {
+            background-color: #9E9E9E;
+            color: #000000;
+        }
+        body.dark .btn-gray:active {
+            background-color: #D4D4D4;
+        }
+        body.dark .btn-dark-gray {
+            background-color: #2B2B2B;
+            color: #FFFFFF;
+        }
+        body.dark .btn-dark-gray:active {
+            background-color: #3D3D3D;
+        }
+        body.dark .btn-orange {
+            background-color: #FE9500;
+            color: #FFFFFF;
+        }
+        body.dark .btn-orange:active {
+            background-color: #FFAA33;
+        }
     </style>
 </head>
-<body class="min-h-screen flex flex-col bg-gray-100 dark:bg-gray-900 transition-colors duration-300">
+<body class="min-h-screen flex flex-col bg-gray-100 dark:bg-black text-gray-900 dark:text-gray-100 transition-colors duration-300">
     <div class="max-w-md mx-auto my-8 p-4 w-full">
         <div class="flex justify-between items-center mb-6">
-            <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Apple Calculator</h1>
-            <button id="theme-toggle" class="mode-toggle p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-yellow-300">
-                <i class="fas fa-moon dark:hidden"></i>
-                <i class="fas fa-sun hidden dark:block"></i>
+            <h1 class="text-2xl font-semibold">Calculator</h1>
+            <button id="theme-toggle" class="mode-toggle p-2 rounded-full focus:outline-none">
+                <i id="theme-icon" class="fas fa-moon theme-icon dark:hidden"></i>
+                <i id="theme-icon-dark" class="fas fa-sun theme-icon hidden dark:block"></i>
             </button>
         </div>
 
-        <div class="bg-gray-200 dark:bg-gray-800 rounded-2xl overflow-hidden shadow-xl">
+        <div class="bg-gray-800 dark:bg-gray-100 rounded-3xl overflow-hidden shadow-xl">
             <!-- Tabs -->
-            <div class="flex border-b border-gray-300 dark:border-gray-600">
-                <button class="tab-button flex-1 py-3 font-medium text-gray-700 dark:text-gray-300 active" data-tab="standard">Standard</button>
-                <button class="tab-button flex-1 py-3 font-medium text-gray-700 dark:text-gray-300" data-tab="scientific">Scientific</button>
-                <button class="tab-button flex-1 py-3 font-medium text-gray-700 dark:text-gray-300" data-tab="converter">Converter</button>
-                <button class="tab-button flex-1 py-3 font-medium text-gray-700 dark:text-gray-300" data-tab="love">Fun</button>
+            <div class="flex border-b border-gray-600 dark:border-gray-300">
+                <button class="tab-button flex-1 py-3 font-medium text-gray-300 dark:text-gray-600 active" data-tab="standard">Standard</button>
+                <button class="tab-button flex-1 py-3 font-medium text-gray-300 dark:text-gray-600" data-tab="scientific">Scientific</button>
+                <button class="tab-button flex-1 py-3 font-medium text-gray-300 dark:text-gray-600" data-tab="converter">Converter</button>
+                <button class="tab-button flex-1 py-3 font-medium text-gray-300 dark:text-gray-600" data-tab="love">Fun</button>
             </div>
 
             <!-- Display -->
             <div class="p-4">
-                <div id="history" class="text-right text-gray-500 dark:text-gray-400 h-6 text-sm"></div>
-                <div id="display" class="calculator-display text-right text-4xl font-light text-gray-900 dark:text-white py-2">0</div>
+                <div id="history" class="text-right text-gray-400 dark:text-gray-600 h-6 text-sm"></div>
+                <div id="display" class="calculator-display text-right text-5xl font-light text-white dark:text-gray-900 py-2 leading-tight">0</div>
             </div>
 
             <!-- Standard Calculator -->
             <div id="standard-tab" class="tab-content p-2 grid grid-cols-4 gap-3">
                 <!-- Row 1 -->
-                <button class="calculator-function bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full h-16 font-medium text-xl" onclick="clearAll()">AC</button>
-                <button class="calculator-function bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full h-16 font-medium text-xl" onclick="toggleSign()">+/-</button>
-                <button class="calculator-function bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full h-16 font-medium text-xl" onclick="percentage()">%</button>
-                <button class="calculator-function bg-blue-500 text-white rounded-full h-16 font-medium text-xl" onclick="appendOperator('÷')">÷</button>
+                <button class="calculator-button btn-gray h-16 font-medium text-2xl" onclick="clearAll()">AC</button>
+                <button class="calculator-button btn-gray h-16 font-medium text-2xl" onclick="toggleSign()">+/-</button>
+                <button class="calculator-button btn-gray h-16 font-medium text-2xl" onclick="percentage()">%</button>
+                <button class="calculator-button btn-orange h-16 font-medium text-2xl" onclick="appendOperator('÷')">÷</button>
                 
                 <!-- Row 2 -->
-                <button class="calculator-function bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-white rounded-full h-16 font-medium text-xl" onclick="appendNumber(7)">7</button>
-                <button class="calculator-function bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-white rounded-full h-16 font-medium text-xl" onclick="appendNumber(8)">8</button>
-                <button class="calculator-function bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-white rounded-full h-16 font-medium text-xl" onclick="appendNumber(9)">9</button>
-                <button class="calculator-function bg-blue-500 text-white rounded-full h-16 font-medium text-xl" onclick="appendOperator('×')">×</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-2xl" onclick="appendNumber(7)">7</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-2xl" onclick="appendNumber(8)">8</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-2xl" onclick="appendNumber(9)">9</button>
+                <button class="calculator-button btn-orange h-16 font-medium text-2xl" onclick="appendOperator('×')">×</button>
                 
                 <!-- Row 3 -->
-                <button class="calculator-function bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-white rounded-full h-16 font-medium text-xl" onclick="appendNumber(4)">4</button>
-                <button class="calculator-function bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-white rounded-full h-16 font-medium text-xl" onclick="appendNumber(5)">5</button>
-                <button class="calculator-function bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-white rounded-full h-16 font-medium text-xl" onclick="appendNumber(6)">6</button>
-                <button class="calculator-function bg-blue-500 text-white rounded-full h-16 font-medium text-xl" onclick="appendOperator('-')">-</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-2xl" onclick="appendNumber(4)">4</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-2xl" onclick="appendNumber(5)">5</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-2xl" onclick="appendNumber(6)">6</button>
+                <button class="calculator-button btn-orange h-16 font-medium text-2xl" onclick="appendOperator('-')">-</button>
                 
                 <!-- Row 4 -->
-                <button class="calculator-function bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-white rounded-full h-16 font-medium text-xl" onclick="appendNumber(1)">1</button>
-                <button class="calculator-function bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-white rounded-full h-16 font-medium text-xl" onclick="appendNumber(2)">2</button>
-                <button class="calculator-function bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-white rounded-full h-16 font-medium text-xl" onclick="appendNumber(3)">3</button>
-                <button class="calculator-function bg-blue-500 text-white rounded-full h-16 font-medium text-xl" onclick="appendOperator('+')">+</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-2xl" onclick="appendNumber(1)">1</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-2xl" onclick="appendNumber(2)">2</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-2xl" onclick="appendNumber(3)">3</button>
+                <button class="calculator-button btn-orange h-16 font-medium text-2xl" onclick="appendOperator('+')">+</button>
                 
                 <!-- Row 5 -->
-                <button class="calculator-function bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-white rounded-full h-16 font-medium text-xl col-span-2" onclick="appendNumber(0)">0</button>
-                <button class="calculator-function bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-white rounded-full h-16 font-medium text-xl" onclick="appendDecimal()">.</button>
-                <button class="calculator-function bg-blue-500 text-white rounded-full h-16 font-medium text-xl" onclick="calculate()">=</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-2xl col-span-2" onclick="appendNumber(0)">0</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-2xl" onclick="appendDecimal()">.</button>
+                <button class="calculator-button btn-orange h-16 font-medium text-2xl" onclick="calculate()">=</button>
             </div>
 
             <!-- Scientific Calculator -->
             <div id="scientific-tab" class="tab-content hidden p-2 grid grid-cols-4 gap-3">
                 <!-- First row -->
-                <button class="calculator-function bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full h-16 font-medium text-xl" onclick="clearAll()">AC</button>
-                <button class="calculator-function bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full h-16 font-medium text-xl" onclick="toggleSign()">+/-</button>
-                <button class="calculator-function bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-full h-16 font-medium text-xl" onclick="percentage()">%</button>
-                <button class="calculator-function bg-blue-500 text-white rounded-full h-16 font-medium text-xl" onclick="appendOperator('÷')">÷</button>
+                <button class="calculator-button btn-gray h-16 font-medium text-xl" onclick="clearAll()">AC</button>
+                <button class="calculator-button btn-gray h-16 font-medium text-xl" onclick="toggleSign()">+/-</button>
+                <button class="calculator-button btn-gray h-16 font-medium text-xl" onclick="percentage()">%</button>
+                <button class="calculator-button btn-orange h-16 font-medium text-xl" onclick="appendOperator('÷')">÷</button>
                 
                 <!-- Second row -->
-                <button class="calculator-function bg-purple-500 text-white rounded-full h-16 font-medium text-sm" onclick="scientificFunction('sin')">sin</button>
-                <button class="calculator-function bg-purple-500 text-white rounded-full h-16 font-medium text-sm" onclick="scientificFunction('cos')">cos</button>
-                <button class="calculator-function bg-purple-500 text-white rounded-full h-16 font-medium text-sm" onclick="scientificFunction('tan')">tan</button>
-                <button class="calculator-function bg-blue-500 text-white rounded-full h-16 font-medium text-xl" onclick="appendOperator('×')">×</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-sm" onclick="scientificFunction('sin')">sin</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-sm" onclick="scientificFunction('cos')">cos</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-sm" onclick="scientificFunction('tan')">tan</button>
+                <button class="calculator-button btn-orange h-16 font-medium text-xl" onclick="appendOperator('×')">×</button>
                 
                 <!-- Third row -->
-                <button class="calculator-function bg-purple-500 text-white rounded-full h-16 font-medium text-sm" onclick="scientificFunction('asin')">sin<sup>-1</sup></button>
-                <button class="calculator-function bg-purple-500 text-white rounded-full h-16 font-medium text-sm" onclick="scientificFunction('acos')">cos<sup>-1</sup></button>
-                <button class="calculator-function bg-purple-500 text-white rounded-full h-16 font-medium text-sm" onclick="scientificFunction('atan')">tan<sup>-1</sup></button>
-                <button class="calculator-function bg-blue-500 text-white rounded-full h-16 font-medium text-xl" onclick="appendOperator('-')">-</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-sm" onclick="scientificFunction('asin')">sin⁻¹</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-sm" onclick="scientificFunction('acos')">cos⁻¹</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-sm" onclick="scientificFunction('atan')">tan⁻¹</button>
+                <button class="calculator-button btn-orange h-16 font-medium text-xl" onclick="appendOperator('-')">-</button>
                 
                 <!-- Fourth row -->
-                <button class="calculator-function bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-white rounded-full h-16 font-medium text-xl" onclick="appendNumber(7)">7</button>
-                <button class="calculator-function bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-white rounded-full h-16 font-medium text-xl" onclick="appendNumber(8)">8</button>
-                <button class="calculator-function bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-white rounded-full h-16 font-medium text-xl" onclick="appendNumber(9)">9</button>
-                <button class="calculator-function bg-blue-500 text-white rounded-full h-16 font-medium text-xl" onclick="appendOperator('+')">+</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-xl" onclick="appendNumber(7)">7</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-xl" onclick="appendNumber(8)">8</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-xl" onclick="appendNumber(9)">9</button>
+                <button class="calculator-button btn-orange h-16 font-medium text-xl" onclick="appendOperator('+')">+</button>
                 
                 <!-- Fifth row -->
-                <button class="calculator-function bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-white rounded-full h-16 font-medium text-xl" onclick="appendNumber(4)">4</button>
-                <button class="calculator-function bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-white rounded-full h-16 font-medium text-xl" onclick="appendNumber(5)">5</button>
-                <button class="calculator-function bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-white rounded-full h-16 font-medium text-xl" onclick="appendNumber(6)">6</button>
-                <button class="calculator-function bg-green-500 text-white rounded-full h-16 font-medium text-sm" onclick="scientificFunction('log')">log</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-xl" onclick="appendNumber(4)">4</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-xl" onclick="appendNumber(5)">5</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-xl" onclick="appendNumber(6)">6</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-sm" onclick="scientificFunction('log')">log</button>
                 
                 <!-- Sixth row -->
-                <button class="calculator-function bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-white rounded-full h-16 font-medium text-xl" onclick="appendNumber(1)">1</button>
-                <button class="calculator-function bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-white rounded-full h-16 font-medium text-xl" onclick="appendNumber(2)">2</button>
-                <button class="calculator-function bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-white rounded-full h-16 font-medium text-xl" onclick="appendNumber(3)">3</button>
-                <button class="calculator-function bg-green-500 text-white rounded-full h-16 font-medium text-sm" onclick="scientificFunction('ln')">ln</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-xl" onclick="appendNumber(1)">1</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-xl" onclick="appendNumber(2)">2</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-xl" onclick="appendNumber(3)">3</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-sm" onclick="scientificFunction('ln')">ln</button>
                 
                 <!-- Seventh row -->
-                <button class="calculator-function bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-white rounded-full h-16 font-medium text-xl col-span-2" onclick="appendNumber(0)">0</button>
-                <button class="calculator-function bg-gray-100 dark:bg-gray-600 text-gray-900 dark:text-white rounded-full h-16 font-medium text-xl" onclick="appendDecimal()">.</button>
-                <button class="calculator-function bg-blue-500 text-white rounded-full h-16 font-medium text-xl" onclick="calculate()">=</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-xl col-span-2" onclick="appendNumber(0)">0</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-xl" onclick="appendDecimal()">.</button>
+                <button class="calculator-button btn-orange h-16 font-medium text-xl" onclick="calculate()">=</button>
                 
                 <!-- Eighth row -->
-                <button class="calculator-function bg-green-500 text-white rounded-full h-16 font-medium text-sm" onclick="scientificFunction('pow')">x<sup>y</sup></button>
-                <button class="calculator-function bg-green-500 text-white rounded-full h-16 font-medium text-sm" onclick="scientificFunction('sqrt')">√x</button>
-                <button class="calculator-function bg-green-500 text-white rounded-full h-16 font-medium text-sm" onclick="scientificFunction('fact')">x!</button>
-                <button class="calculator-function bg-green-500 text-white rounded-full h-16 font-medium text-sm" onclick="scientificFunction('pi')">π</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-sm" onclick="scientificFunction('pow')">xʸ</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-sm" onclick="scientificFunction('sqrt')">√x</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-sm" onclick="scientificFunction('fact')">x!</button>
+                <button class="calculator-button btn-dark-gray h-16 font-medium text-sm" onclick="scientificFunction('pi')">π</button>
             </div>
 
             <!-- Converter -->
             <div id="converter-tab" class="tab-content hidden p-4">
                 <div class="mb-4">
-                    <label for="converter-type" class="block text-gray-700 dark:text-gray-300 mb-2">Converter Type</label>
-                    <select id="converter-type" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    <label for="converter-type" class="block text-gray-300 dark:text-gray-600 mb-2">Converter Type</label>
+                    <select id="converter-type" class="w-full p-3 border border-gray-600 dark:border-gray-300 rounded-lg bg-gray-700 dark:bg-gray-100 text-white dark:text-gray-900">
                         <option value="length">Length</option>
                         <option value="temperature">Temperature</option>
                         <option value="weight">Weight</option>
@@ -171,27 +219,27 @@
 
                 <div class="grid grid-cols-2 gap-4">
                     <div>
-                        <label for="from-value" class="block text-gray-700 dark:text-gray-300 mb-2">From</label>
-                        <input type="number" id="from-value" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="Value">
+                        <label for="from-value" class="block text-gray-300 dark:text-gray-600 mb-2">From</label>
+                        <input type="number" id="from-value" class="w-full p-3 border border-gray-600 dark:border-gray-300 rounded-lg bg-gray-700 dark:bg-gray-100 text-white dark:text-gray-900" placeholder="Value">
                     </div>
                     <div>
-                        <label for="from-unit" class="block text-gray-700 dark:text-gray-300 mb-2">Unit</label>
-                        <select id="from-unit" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"></select>
+                        <label for="from-unit" class="block text-gray-300 dark:text-gray-600 mb-2">Unit</label>
+                        <select id="from-unit" class="w-full p-3 border border-gray-600 dark:border-gray-300 rounded-lg bg-gray-700 dark:bg-gray-100 text-white dark:text-gray-900"></select>
                     </div>
 
                     <div class="col-span-2 flex justify-center mt-2 mb-4">
-                        <button id="swap-units" class="p-3 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white rounded-full">
+                        <button id="swap-units" class="p-3 bg-gray-600 dark:bg-gray-200 text-white dark:text-gray-900 rounded-full">
                             <i class="fas fa-exchange-alt"></i>
                         </button>
                     </div>
 
                     <div>
-                        <label for="to-value" class="block text-gray-700 dark:text-gray-300 mb-2">To</label>
-                        <input type="number" id="to-value" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="Result" readonly>
+                        <label for="to-value" class="block text-gray-300 dark:text-gray-600 mb-2">To</label>
+                        <input type="number" id="to-value" class="w-full p-3 border border-gray-600 dark:border-gray-300 rounded-lg bg-gray-700 dark:bg-gray-100 text-white dark:text-gray-900" placeholder="Result" readonly>
                     </div>
                     <div>
-                        <label for="to-unit" class="block text-gray-700 dark:text-gray-300 mb-2">Unit</label>
-                        <select id="to-unit" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"></select>
+                        <label for="to-unit" class="block text-gray-300 dark:text-gray-600 mb-2">Unit</label>
+                        <select id="to-unit" class="w-full p-3 border border-gray-600 dark:border-gray-300 rounded-lg bg-gray-700 dark:bg-gray-100 text-white dark:text-gray-900"></select>
                     </div>
                 </div>
             </div>
@@ -200,36 +248,36 @@
             <div id="love-tab" class="tab-content hidden p-4">
                 <div class="text-center mb-6">
                     <i class="fas fa-heart text-red-500 text-5xl mb-4"></i>
-                    <h2 class="text-2xl font-semibold text-gray-900 dark:text-white">Love Calculator</h2>
-                    <p class="text-gray-600 dark:text-gray-400">Calculate the love compatibility between two names</p>
+                    <h2 class="text-2xl font-semibold text-white dark:text-gray-900">Love Calculator</h2>
+                    <p class="text-gray-400 dark:text-gray-600">Calculate the love compatibility between two names</p>
                 </div>
 
                 <div class="space-y-4">
                     <div>
-                        <label for="name1" class="block text-gray-700 dark:text-gray-300 mb-2">First Name</label>
-                        <input type="text" id="name1" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="Your name">
+                        <label for="name1" class="block text-gray-300 dark:text-gray-600 mb-2">First Name</label>
+                        <input type="text" id="name1" class="w-full p-3 border border-gray-600 dark:border-gray-300 rounded-lg bg-gray-700 dark:bg-gray-100 text-white dark:text-gray-900" placeholder="Your name">
                     </div>
                     <div>
-                        <label for="name2" class="block text-gray-700 dark:text-gray-300 mb-2">Second Name</label>
-                        <input type="text" id="name2" class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="Partner's name">
+                        <label for="name2" class="block text-gray-300 dark:text-gray-600 mb-2">Second Name</label>
+                        <input type="text" id="name2" class="w-full p-3 border border-gray-600 dark:border-gray-300 rounded-lg bg-gray-700 dark:bg-gray-100 text-white dark:text-gray-900" placeholder="Partner's name">
                     </div>
 
                     <button id="calculate-love" class="w-full py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors">
                         Calculate Love Score
                     </button>
 
-                    <div id="love-result" class="hidden mt-6 p-4 bg-red-50 dark:bg-gray-800 rounded-lg text-center">
+                    <div id="love-result" class="hidden mt-6 p-4 bg-gray-700 dark:bg-gray-100 rounded-lg text-center">
                         <i id="heart-icon" class="fas fa-heart text-red-500 text-4xl mb-3"></i>
-                        <p class="text-gray-900 dark:text-white" id="result-text"></p>
+                        <p class="text-white dark:text-gray-900" id="result-text"></p>
                         <h3 id="love-percentage" class="text-3xl font-bold text-red-500 mt-2"></h3>
-                        <p id="love-message" class="text-gray-600 dark:text-gray-300 mt-2"></p>
+                        <p id="love-message" class="text-gray-400 dark:text-gray-600 mt-2"></p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="mt-4 text-center text-gray-500 dark:text-gray-400 text-sm">
-            Made by <a href="https://github.com/sk16er" class="text-blue-500 hover:underline" target="_blank">SK</a>
+        <div class="mt-4 text-center text-gray-400 dark:text-gray-600 text-sm">
+            Made by <a href="https://github.com/sk16er" class="text-blue-400 hover:underline" target="_blank">SK</a>
         </div>
     </div>
 
@@ -238,6 +286,8 @@
         const display = document.getElementById('display');
         const history = document.getElementById('history');
         const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        const themeIconDark = document.getElementById('theme-icon-dark');
         const tabButtons = document.querySelectorAll('.tab-button');
         const tabContents = document.querySelectorAll('.tab-content');
         const converterType = document.getElementById('converter-type');
@@ -329,8 +379,10 @@
             // Set up theme toggle
             if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
                 document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
             } else {
                 document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
             }
 
             // Set up tab switching
@@ -356,6 +408,28 @@
             updateDisplay();
         }
 
+        // Theme toggle with animation
+        themeToggle.addEventListener('click', () => {
+            const themeIcons = [themeIcon, themeIconDark];
+            
+            // Add animation class
+            themeIcons.forEach(icon => icon.classList.add('animate'));
+            
+            // Remove animation class after animation completes
+            setTimeout(() => {
+                themeIcons.forEach(icon => icon.classList.remove('animate'));
+            }, 500);
+            
+            // Toggle dark mode
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('theme', 'dark');
+            }
+        });
+
         // Calculator functions
         function updateDisplay() {
             display.textContent = currentInput;
@@ -365,7 +439,7 @@
             if (currentInput === '0' || resetInput) {
                 currentInput = number.toString();
                 resetInput = false;
-            } else {
+            } else if (currentInput.length < 15) { // Prevent overflow
                 currentInput += number.toString();
             }
             updateDisplay();
@@ -432,6 +506,10 @@
             }
 
             history.textContent = `${previousInput} ${operation} ${currentInput} =`;
+            
+            // Round to 10 decimal places to avoid floating point errors
+            result = Math.round(result * 10000000000) / 10000000000;
+            
             currentInput = result.toString();
             operation = null;
             resetInput = true;
@@ -492,6 +570,9 @@
                 operation = null;
             }
 
+            // Round to 10 decimal places
+            result = Math.round(result * 10000000000) / 10000000000;
+            
             currentInput = result.toString();
             resetInput = true;
             updateDisplay();
@@ -522,24 +603,19 @@
             tabContents.forEach(content => {
                 if (content.id === `${tabName}-tab`) {
                     content.classList.remove('hidden');
+                    setTimeout(() => {
+                        content.style.opacity = '1';
+                    }, 10);
                 } else {
-                    content.classList.add('hidden');
+                    content.style.opacity = '0';
+                    setTimeout(() => {
+                        content.classList.add('hidden');
+                    }, 300);
                 }
             });
 
             activeTab = tabName;
         }
-
-        // Theme toggle
-        themeToggle.addEventListener('click', () => {
-            if (document.documentElement.classList.contains('dark')) {
-                document.documentElement.classList.remove('dark');
-                localStorage.setItem('theme', 'light');
-            } else {
-                document.documentElement.classList.add('dark');
-                localStorage.setItem('theme', 'dark');
-            }
-        });
 
         // Converter functions
         function populateConverterUnits() {
@@ -570,9 +646,8 @@
         }
 
         function formatUnitName(unit) {
-            // Convert camelCase to spaced words
+            // Convert camelCase to spaced words and capitalize first letter
             const spaced = unit.replace(/([A-Z])/g, ' $1').toLowerCase();
-            // Capitalize first letter
             return spaced.charAt(0).toUpperCase() + spaced.slice(1);
         }
 
@@ -592,6 +667,7 @@
                 result = value * unit1 / unit2;
             }
             
+            // Round to 6 decimal places and remove trailing zeros
             toValue.value = result.toFixed(6).replace(/\.?0+$/, '');
         }
 
